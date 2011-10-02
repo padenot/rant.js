@@ -45,7 +45,10 @@ function addComment(obj) {
   }
   var article = obj.article;
   delete obj.article;
-  comments[article] = obj;
+  if (!comments[article]) {
+    comments[article] = [];
+  }
+  comments[article].push(obj);
 }
 
 init_comments();
