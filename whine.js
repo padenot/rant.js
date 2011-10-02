@@ -58,6 +58,7 @@ http.createServer(function (request, response) {
     // problem if concurrent submission ?
     request.addListener("data", function(chunk) {
       data += chunk.toString("utf8");
+      console.log(data);
     });
     request.addListener("end", function() {
       var obj = eval(data.toString("utf8"));
