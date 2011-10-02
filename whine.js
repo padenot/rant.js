@@ -59,7 +59,7 @@ http.createServer(function (request, response) {
     request.addListener("data", function(chunk) {
       console.log(chunk);
     });
-    request.addListener("end"), function() {
+    request.addListener("end", function() {
       console.log("end");
     });
   }
