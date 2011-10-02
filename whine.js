@@ -2,8 +2,7 @@ var fs = require('fs');
 var http = require('http');
 
 var comments = null;
-
-
+var data = "";
 
 function init_comments() {
   fs.readFile('comments.json', "utf-8", function (err, data) {
@@ -56,11 +55,13 @@ http.createServer(function (request, response) {
       "Content-Length": content_length});
     response.end(data);
   } else if (request.method === "POST") {
+    // problem if concurrent submission ?
     request.addListener("data", function(chunk) {
-      console.log(chunk);
+      data += chunk.toString("utf8");
     });
     request.addListener("end", function() {
-      console.log("end");
+      var obj = eval(data.toString("utf8"));
+      console.log(obj);
     });
   }
 }).listen(8125);
