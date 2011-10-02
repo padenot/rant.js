@@ -58,7 +58,7 @@ http.createServer(function (request, response) {
     // problem if concurrent submission ?
     request.addListener("data", function(chunk) {
       console.log("chunk");
-      data += chunk.toString("utf8");
+      data=chunk.toString("utf8");
       console.log(data);
     });
     request.addListener("end", function() {
