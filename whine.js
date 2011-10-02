@@ -57,6 +57,7 @@ http.createServer(function (request, response) {
   } else if (request.method === "POST") {
     // problem if concurrent submission ?
     request.addListener("data", function(chunk) {
+      console.log("chunk");
       data += chunk.toString("utf8");
       console.log(data);
     });
