@@ -39,6 +39,15 @@ function get_article(request) {
   return request.url.substr(1);
 }
 
+function addComment(obj) {
+  if (obj.author.length == 0 || obj.email.length == 0 || obj.content.length == 0) {
+    return;
+  }
+  var article = obj.article;
+  delete obj.article;
+  comments[article] = obj;
+}
+
 init_comments();
 http.createServer(function (request, response) {
   // Get comments
@@ -63,6 +72,7 @@ http.createServer(function (request, response) {
     });
     request.addListener("end", function() {
       var obj = JSON.parse(data.toString("utf8"));
+      addComment(obj);
       console.log(obj);
     });
   }
