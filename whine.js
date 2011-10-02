@@ -56,7 +56,12 @@ http.createServer(function (request, response) {
       "Content-Length": content_length});
     response.end(data);
   } else if (request.method === "POST") {
-    throw "not implemented";
+    request.addListener("data", function(chunk) {
+      console.log(chunk);
+    });
+    request.addListener("end"), function() {
+      console.log("end");
+    });
   }
 }).listen(8125);
 
