@@ -46,11 +46,18 @@ http.createServer(function (request, response) {
   if (request.method === "GET") {
     var article = get_article(request);
     var comments = get_comments(article);
-    response.writeHead(200, {"Content-Type": "text/json"});
-    response.end(JSON.stringify(comments));
+    var data = JSON.stringify(comments);
+    var content_length = 0;
+    if (data) {
+      content_length = data.length;
+    }
+    response.writeHead(200, {
+      "Content-Type": "text/json",
+      "Content-Length": content_length});
+    response.end(data);
   } else if (request.method === "POST") {
     throw "not implemented";
   }
-}).listen(80);
+}).listen(8125);
 
 console.log('Server running at http://127.0.0.1:8125/');
