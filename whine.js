@@ -9,7 +9,7 @@ function init_comments() {
     if (err) {
       throw err;
     }
-    comments = eval(data.toString());
+    comments = JSON.parse(data.toString());
     comments = index(comments);
     console.log(comments);
   });
@@ -62,7 +62,7 @@ http.createServer(function (request, response) {
       console.log(data);
     });
     request.addListener("end", function() {
-      var obj = eval(data.toString("utf8"));
+      var obj = JSON.parse(data.toString("utf8"));
       console.log(obj);
     });
   }
