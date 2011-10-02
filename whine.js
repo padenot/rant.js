@@ -37,7 +37,7 @@ function get_comments(article) {
 }
 
 function get_article(request) {
-  return request.url;
+  return request.url.substr(1);
 }
 
 init_comments();
