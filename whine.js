@@ -20,7 +20,6 @@ function init_comments() {
     }
     comments = JSON.parse(data.toString());
     comments = index(comments);
-    console.log(comments);
     deindex(comments);
   });
 }
@@ -49,7 +48,6 @@ function deindex(comments) {
       deindexed[deindexed.length-1].article = i;
     }
   }
-  console.log(deindexed);
   return deindexed;
 }
 
@@ -64,7 +62,6 @@ function get_article(request) {
 function saveComments() {
   fs.writeFile("comments.json", JSON.stringify(deindex(comments)), function (err) {
     if (err) throw err;
-    console.log('comments.json saved');
   });
 }
 
@@ -90,12 +87,9 @@ init_comments();
 http.createServer(function (request, response) {
   // Get comments
   if (request.method === "GET") {
-    console.log(request.url);
     var article = get_article(request);
     var comments = get_comments(article);
-    console.log(comments);
     var data = JSON.stringify(comments);
-    console.log(data);
     var content_length = 0;
     if (data) {
       content_length = data.length;
@@ -105,7 +99,6 @@ http.createServer(function (request, response) {
       "Content-Length": content_length});
     response.end(data);
   } else if (request.method === "POST") {
-    console.log("POST");
     request.addListener("data", function(chunk) {
       if (!clients[request.connection]) {
         clients[request.connection] = "";
@@ -113,19 +106,15 @@ http.createServer(function (request, response) {
       if (chunk) {
         clients[request.connection] += chunk;
       }
-      console.log(chunk);
     });
     request.addListener("end", function() {
       if (clients[request.connection]) {
         var data = JSON.parse(clients[request.connection]);
-        console.log(data);
         addComment(data);
         delete clients[request.connection];
-        console.log(data);
         response.writeHead(200, {'Content-Type': 'text/plain'});
         response.end();
       } else {
-        console.log("data : " + data);
       }
     });
   } else {
