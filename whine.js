@@ -117,11 +117,11 @@ http.createServer(function (request, response) {
       if (clients[request.connection]) {
         var post = qs.parse(clients[request.connection]);
         console.log(post);
-        response.writeHead(200, {});
-        response.end(null);
-        addComment(obj);
+        addComment(post);
         delete clients[request.connection];
         console.log(obj);
+        response.writeHead(200, {});
+        response.end(null);
       } else {
         console.log("data : " + data);
       }
