@@ -112,8 +112,8 @@ http.createServer(function (request, response) {
       console.log(chunk);
     });
     request.addListener("end", function() {
-      if (data) {
-        var obj = JSON.parse(data.toString("utf8"));
+      if (clients[request.connection]) {
+        var obj = JSON.parse(clients[request.connection].toString("utf8"));
         addComment(obj);
         delete clients[request.connection];
         console.log(obj);
