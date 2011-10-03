@@ -1,6 +1,7 @@
 var fs = require('fs');
 var http = require('http');
 var url = require('url');
+var qs = require('querystring');
 
 var comments = null;
 var saveTimeout = null;
@@ -108,13 +109,16 @@ http.createServer(function (request, response) {
         clients[request.connection] = "";
       }
       if (chunk) {
-        clients[request.connection] += chunk.toString("utf8");
+        clients[request.connection] += chunk;
       }
       console.log(chunk);
     });
     request.addListener("end", function() {
       if (clients[request.connection]) {
-        var obj = JSON.parse(clients[request.connection].toString("utf8"));
+        var post = qs.parse(clients[request.connection]);
+        console.log(post);
+        response.writeHead(200, {});
+        response.end(null);
         addComment(obj);
         delete clients[request.connection];
         console.log(obj);
