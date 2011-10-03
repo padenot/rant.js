@@ -103,8 +103,8 @@ http.createServer(function (request, response) {
   } else if (request.method === "POST") {
     console.log("POST");
     request.addListener("data", function(chunk) {
-      if (!client[request.connection]) {
-        client[request.connection] = "";
+      if (!clients[request.connection]) {
+        clients[request.connection] = "";
       }
       if (chunk) {
         clients[request.connection] += chunk.toString("utf8");
