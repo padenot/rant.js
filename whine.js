@@ -57,7 +57,7 @@ function get_comments(article) {
 }
 
 function get_article(request) {
-  return url.parse(request.url).pathname;
+  return url.parse(request.url).pathname.substr(1);
 }
 
 function saveComments() {
