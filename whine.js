@@ -119,7 +119,7 @@ http.createServer(function (request, response) {
         console.log(post);
         addComment(post);
         delete clients[request.connection];
-        console.log(obj);
+        console.log(post);
         response.writeHead(200, {});
         response.end(null);
       } else {
