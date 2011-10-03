@@ -123,7 +123,7 @@ http.createServer(function (request, response) {
         delete clients[request.connection];
         console.log(data);
         response.writeHead(200, {'Content-Type': 'text/plain'});
-        response.close();
+        response.end();
       } else {
         console.log("data : " + data);
       }
