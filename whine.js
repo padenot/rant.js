@@ -1,5 +1,6 @@
 var fs = require('fs');
 var http = require('http');
+var url = require('url');
 
 var comments = null;
 var saveTimeout = null;
@@ -56,7 +57,7 @@ function get_comments(article) {
 }
 
 function get_article(request) {
-  return request.url;
+  return url.parse(request.url).pathname;
 }
 
 function saveComments() {
