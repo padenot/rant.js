@@ -72,16 +72,18 @@ function addComment(obj) {
   if (saveTimeout != null) {
     clearTimeout(saveTimeout);
   }
-  if (obj.author.length == 0 || obj.email.length == 0 || obj.content.length == 0) {
-    return;
+  if (obj.author && obj.email && obj.content) {
+    if (obj.author.length == 0 || obj.email.length == 0 || obj.content.length == 0) {
+      return;
+    }
+    var article = obj.article;
+    delete obj.article;
+    if (!comments[article]) {
+      comments[article] = [];
+    }
+    comments[article].push(obj);
+    saveTimeout = setTimeout(saveComments, 500);
   }
-  var article = obj.article;
-  delete obj.article;
-  if (!comments[article]) {
-    comments[article] = [];
-  }
-  comments[article].push(obj);
-  saveTimeout = setTimeout(saveComments, 500);
 }
 
 init_comments();
@@ -115,7 +117,7 @@ http.createServer(function (request, response) {
     });
     request.addListener("end", function() {
       if (clients[request.connection]) {
-        var data = clients[request.connection];
+        var data = JSON.parse(clients[request.connection]);
         console.log(data);
         addComment(data);
         delete clients[request.connection];
