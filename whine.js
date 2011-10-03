@@ -60,7 +60,7 @@ function get_article(request) {
 }
 
 function saveComments() {
-  fs.writeFile(JSON.stringify(deindex(comments)), "comments.json", function (err) {
+  fs.writeFile("comments.json", JSON.stringify(deindex(comments)), function (err) {
     if (err) throw err;
     console.log('comments.json saved');
   });
