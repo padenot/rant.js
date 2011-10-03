@@ -122,8 +122,10 @@ http.createServer(function (request, response) {
         addComment(data);
         delete clients[request.connection];
         console.log(data);
-        response.writeHead(200, {});
-        response.end(null);
+        response.writeHead(200, {
+          "Content-Type": "text/json",
+          "Content-Length": content_length});
+        response.end(data);
       } else {
         console.log("data : " + data);
       }
