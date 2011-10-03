@@ -115,11 +115,11 @@ http.createServer(function (request, response) {
     });
     request.addListener("end", function() {
       if (clients[request.connection]) {
-        var post = qs.parse(clients[request.connection]);
-        console.log(post);
-        addComment(post);
+        var data = clients[request.connection];
+        console.log(data);
+        addComment(data);
         delete clients[request.connection];
-        console.log(post);
+        console.log(data);
         response.writeHead(200, {});
         response.end(null);
       } else {
