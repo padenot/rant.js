@@ -126,7 +126,7 @@ function process_post(request, response) {
 
     // XXX Check email ?
     if (comment.author && comment.email && comment.content &&
-        content.author.length < 30 && comment.email.length < 254 &&
+        comment.author.length < 30 && comment.email.length < 254 &&
         comment.content < 8000) {
       comments.add_comment(comment);
     }
