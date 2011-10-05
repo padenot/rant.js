@@ -2,14 +2,10 @@ var fs = require('fs');
 var http = require('http');
 var url = require('url');
 
-// [
-//    {client: client, data: "data reveived for now"},
-//    {client: client, data: "data reveived for now"},
-//    {client: client, data: "data reveived for now"},
-// ]
 function Comments() {
   this.comments = null;
   this.saveTimeout = null;
+  /* Indexed using the article as key */
   this.index = function(comments) {
     var indexed = {};
     for(var i = 0; i < comments.length; i++) {
@@ -23,6 +19,7 @@ function Comments() {
     return indexed;
   };
 
+  /* Stored using a json array */
   this.deindex = function(comments) {
     var deindexed = [];
     for (var i in comments) {
@@ -34,6 +31,7 @@ function Comments() {
     return deindexed;
   };
 
+  /* Read all comments from file on startup */
   this.init = function() {
     var _this = this;
     fs.readFile('comments.json', "utf-8", function (err, data) {
@@ -45,8 +43,10 @@ function Comments() {
     });
   };
 
-  this.canonicalize_url = function(url) {
-    var split = url.split('/');
+  /* Remove multiple consecutive slashes, and put the path
+   * in the form /dir/dir */
+  this.canonicalize_path = function(path) {
+    var split = path.split('/');
     var nonblank = [];
     for(var i = 0; i < split.length; i++) {
       if (split[i] != "") {
@@ -56,10 +56,13 @@ function Comments() {
     return "/" + nonblank.join('/')
   }
 
+  /* Get the commets for the associated article */
   this.get_comments = function(article) {
-    return this.comments[this.canonicalize_url(article)];
+    return this.comments[this.canonicalize_path(article)];
   };
 
+  /* Add a comment. Write the data after 500ms on incactivity, to avoid smashing
+   * my poor VPN hard drive */
   this.add_comment = function(comment) {
     /* Reset the timer */
     if (this.saveTimeout != null) {
@@ -87,10 +90,12 @@ function Comments() {
   };
 }
 
+/* Get the article from a request */
 function get_article(request) {
   return url.parse(request.url).pathname.substr(1);
 }
 
+/* Process a GET request, to load the comments */
 function process_get(request, response) {
     var article = get_article(request);
     var c = comments.get_comments(article);
@@ -105,6 +110,7 @@ function process_get(request, response) {
     response.end(data);
 }
 
+/* Process a POST request, to add a comment */
 function process_post(request, response) {
   var chunks = "";
   request.addListener("data", function(chunk) {
@@ -117,7 +123,11 @@ function process_post(request, response) {
     } catch (e) {
       return;
     }
-    if (comment.author && comment.email && comment.content) {
+
+    // XXX Check email ?
+    if (comment.author && comment.email && comment.content &&
+        content.author.length < 30 && comment.email.length < 254 &&
+        comment.content < 8000) {
       comments.add_comment(comment);
     }
     response.writeHead(200, {});
