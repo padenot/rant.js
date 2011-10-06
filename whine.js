@@ -1,6 +1,23 @@
 var fs = require('fs');
 var http = require('http');
 var url = require('url');
+var spawn = require('child_process').spawn;
+
+/* Compute md5sum of the first argument */
+function md5(data, callback) {
+  md5    = spawn('md5sum', []);
+
+  md5.stdout.on('data', function (data) {
+    callback("", data.toString().split(' ')[0]);
+  });
+
+  md5.stderr.on('data', function (data) {
+    callback(data, "");
+  });
+
+  md5.stdin.write(data);
+  md5.stdin.end();
+}
 
 function Comments() {
   this.comments = null;
@@ -56,9 +73,13 @@ function Comments() {
     return "/" + nonblank.join('/')
   }
 
-  /* Get the commets for the associated article */
+  /* Get the comments for the associated article */
   this.get_comments = function(article) {
-    return this.comments[this.canonicalize_path(article)];
+    var c = this.comments[this.canonicalize_path(article)];
+    for (var i = 0; i < c.length; i++) {
+      delete c[i].email;
+    }
+    return c;
   };
 
   /* Add a comment. Write the data after 500ms on incactivity, to avoid smashing
@@ -68,25 +89,20 @@ function Comments() {
     if (this.saveTimeout != null) {
       clearTimeout(this.saveTimeout);
     }
-    if (comment.author && comment.email && comment.content) {
-      if (comment.author.length == 0 || comment.email.length == 0 || comment.content.length == 0) {
-        return;
-      }
-      var article = comment.article;
-      delete comment.article;
-      if (!this.comments[article]) {
-        this.comments[article] = [];
-      }
-      this.comments[article].push(comment);
-      var _this = this;
-      this.saveTimeout = setTimeout(function() {
-        fs.writeFile("comments.json", JSON.stringify(_this.deindex(_this.comments)), function (err) {
-        if (err)
-          throw err;
-        console.log("comments saved");
-        });
-      }, 500);
+    var article = comment.article;
+    delete comment.article;
+    if (!this.comments[article]) {
+      this.comments[article] = [];
     }
+    this.comments[article].push(comment);
+    var _this = this;
+    this.saveTimeout = setTimeout(function() {
+      fs.writeFile("comments.json", JSON.stringify(_this.deindex(_this.comments)), function (err) {
+        if (err)
+        throw err;
+      console.log("comments saved");
+      });
+    }, 500);
   };
 }
 
@@ -110,7 +126,8 @@ function process_get(request, response) {
     response.end(data);
 }
 
-/* Process a POST request, to add a comment */
+/* Process a POST request, to add a comment. This function computes the mp5sum
+ * of the mail to be able to send it back for gravatar display. */
 function process_post(request, response) {
   var chunks = "";
   request.addListener("data", function(chunk) {
@@ -121,17 +138,22 @@ function process_post(request, response) {
     try {
       var comment = JSON.parse(chunks);
     } catch (e) {
+      console.log(e);
       return;
     }
-
     // XXX Check email ?
     if (comment.author && comment.email && comment.content &&
-        comment.author.length < 30 && comment.email.length < 254 &&
-        comment.content < 8000) {
-      comments.add_comment(comment);
+      comment.author.length < 30 && comment.email.length < 254 &&
+      comment.content.length < 8000) {
+      md5(comment.email, function(err, hash) {
+        if (!err) {
+          comment.email_hash = hash;
+          comments.add_comment(comment);
+        } else {
+          console.log (err);
+        }
+      });
     }
-    response.writeHead(200, {});
-    response.end();
   });
 }
 
