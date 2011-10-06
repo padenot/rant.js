@@ -76,8 +76,10 @@ function Comments() {
   /* Get the comments for the associated article */
   this.get_comments = function(article) {
     var c = this.comments[this.canonicalize_path(article)];
-    for (var i = 0; i < c.length; i++) {
-      delete c[i].email;
+    if (c) {
+      for (var i = 0; i < c.length; i++) {
+        delete c[i].email;
+      }
     }
     return c;
   };
