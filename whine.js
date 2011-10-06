@@ -149,6 +149,10 @@ function process_post(request, response) {
         if (!err) {
           comment.email_hash = hash;
           comments.add_comment(comment);
+          response.writeHead(200, {
+            "Content-Type": "application/json",
+            "Content-Length": hash.length});
+          response.end(hash);
         } else {
           console.log (err);
         }
