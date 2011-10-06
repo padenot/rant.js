@@ -4,7 +4,7 @@ var url = require('url');
 var spawn = require('child_process').spawn;
 
 /* Compute md5sum of the first argument */
-function md5(data, callback) {
+function md5sum(data, callback) {
   md5    = spawn('md5sum', []);
 
   md5.stdout.on('data', function (data) {
@@ -145,7 +145,7 @@ function process_post(request, response) {
     if (comment.author && comment.email && comment.content &&
       comment.author.length < 30 && comment.email.length < 254 &&
       comment.content.length < 8000) {
-      md5(comment.email, function(err, hash) {
+      md5sum(comment.email, function(err, hash) {
         if (!err) {
           comment.email_hash = hash;
           comments.add_comment(comment);
