@@ -2,6 +2,7 @@ var fs = require('fs');
 var http = require('http');
 var url = require('url');
 var spawn = require('child_process').spawn;
+var md = require('markdown').Markdown;
 
 /* Compute md5sum of the first argument */
 function md5sum(data, callback) {
@@ -94,6 +95,7 @@ function Comments() {
     if (!this.comments[article]) {
       this.comments[article] = [];
     }
+    comment.content = md(comment.content, "strong|a|em|sup|sub|strike|ul|code|li|ol|p")
     this.comments[article].push(comment);
     var _this = this;
     this.saveTimeout = setTimeout(function() {
