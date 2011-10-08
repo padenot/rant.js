@@ -2,7 +2,7 @@ var fs = require('fs');
 var http = require('http');
 var url = require('url');
 var spawn = require('child_process').spawn;
-var md = require('markdown').Markdown;
+var md = require('node-markdown').Markdown;
 
 /* Compute md5sum of the first argument */
 function md5sum(data, callback) {
