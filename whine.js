@@ -107,6 +107,7 @@ function Comments() {
       console.log("comments saved");
       });
     }, 500);
+    return comment;
   };
 }
 
@@ -152,11 +153,12 @@ function process_post(request, response) {
       md5sum(comment.email, function(err, hash) {
         if (!err) {
           comment.email_hash = hash;
-          comments.add_comment(comment);
+          var processed = comments.add_comment(comment);
           response.writeHead(200, {
             "Content-Type": "application/json",
             "Content-Length": hash.length});
-          response.end(hash);
+          delete processed.email;
+          response.end(processed);
         } else {
           console.log (err);
         }
