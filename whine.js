@@ -158,7 +158,7 @@ function process_post(request, response) {
             "Content-Type": "application/json",
             "Content-Length": hash.length});
           delete processed.email;
-          response.end(processed);
+          response.end(JSON.stringify(processed));
         } else {
           console.log (err);
         }
