@@ -75,14 +75,36 @@ function Comments() {
   }
 
   /* Get the comments for the associated article */
+  /* If articles == "last", get he last comments written */
+  /* If articles == "*", get all comments written */
   this.get_comments = function(article) {
-    var c = this.comments[this.canonicalize_path(article)];
-    if (c) {
-      for (var i = 0; i < c.length; i++) {
-        delete c[i].email;
+    var c;
+    switch(article) {
+      case "*":
+        c = this.comments;
+        break;
+      case "last":
+        var all = this.deindex(this.comments);
+        if (all.length < 3) {
+          c = all;
+        } else {
+          c = [];
+          for (var i = all.length - 4; i < all.length; i++) {
+            c.push(all[i]);
+          }
+        }
+        break;
+      default:
+        c = this.comments[this.canonicalize_path(article)];
+        break;
       }
-    }
-    return c;
+
+        if (c) {
+          for (var i = 0; i < c.length; i++) {
+            delete c[i].email;
+          }
+        }
+        return c;
   };
 
   /* Add a comment. Write the data after 500ms on incactivity, to avoid smashing
