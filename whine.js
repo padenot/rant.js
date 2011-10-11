@@ -80,10 +80,10 @@ function Comments() {
   this.get_comments = function(article) {
     var c;
     switch(article) {
-      case "*":
+      case "/*":
         c = this.comments;
         break;
-      case "last":
+      case "/last":
         var all = this.deindex(this.comments);
         if (all.length < 3) {
           c = all;
