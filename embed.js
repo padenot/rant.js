@@ -187,12 +187,13 @@ function CommentArea(config) {
    * </div>
    */
   this.init_comment_zone = function() {
-    var fileref=createElement("link")
-    fileref.setAttribute("rel", "stylesheet")
-    fileref.setAttribute("type", "text/css")
-    fileref.setAttribute("href", script_url+"whine.css")
-    $('head').appendChild(fileref);
-    // Comments display
+    var css=createElement("link");
+    css.setAttribute("rel", "stylesheet");
+    css.setAttribute("type", "text/css");
+    css.setAttribute("href", this.config.url+"whine.css");
+    $('head').appendChild(css);
+
+    /* Comments display */
     this.config = config;
     if (this.config.root != null) {
     } else {
@@ -206,7 +207,7 @@ function CommentArea(config) {
 
     this.root.appendChild(this.display);
 
-    // Comments form
+    /* Comments form */
     this.form = createElement('div', 'commentsForm');
     var form = createElement('form');
     if (this.config.form) {
@@ -232,10 +233,13 @@ function CommentArea(config) {
         (_this.send_comment.bind(_this))();
       }, false);
     }
+
+    /* Get the comments for this page */
     var _this = this;
-    console.log(this.config.url);
-    XHR(this.config.url, "GET", null, function(data) {
-      (_this.render_comments.bind(_this))(data, this.display);
+    var url = this.config.url + getPath();
+    console.log(url);
+    XHR(url, "GET", null, function(data) {
+      (_this.render_comments.bind(_this))(data);
     }, function() {
       showError(this.config.onCommentLoadError, _this.root);
     });
@@ -243,18 +247,22 @@ function CommentArea(config) {
 
   this.add_single_comment = function(comment) {
     var commentElement = createElement('div', 'comment');
+    /* Picture */
     if (this.config.photos) {
       var gravatar = document.createElement('img');
       gravatar.className="gravatar";
       gravatar.src = "http://www.gravatar.com/avatar/" + comment.email_hash + "?s=80&d=mm";
       commentElement.appendChild(gravatar);
     }
-    author = createElement('a', 'author', comment.author);
+
+    /* Name & link */
+    var author = createElement('a', 'author', comment.author);
     if (comment.link) {
       author.href = comment.link;
     }
     commentElement.appendChild(author);
 
+    /* Date */
     if (this.config.dates) {
       var date = createElement('span', "date");
       if (comment.date) {
@@ -263,16 +271,18 @@ function CommentArea(config) {
       }
       commentElement.appendChild(date);
     }
+
+    /* Content */
     var content = createElement('p', 'commentContent', comment.content);
     commentElement.appendChild(content);
     return commentElement;
   };
 
-  this.render_comments = function(data, where) {
+  this.render_comments = function(data) {
     if (this.display == null) {
       throw "this.display == null, cannot render_comments()";
     }
-    remove_throbber($(".throbber", where));
+    remove_throbber($(".throbber", this.display));
     if (data.length != 0) {
       try {
         var comments = JSON.parse(data);
