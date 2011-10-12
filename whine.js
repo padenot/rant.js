@@ -20,6 +20,29 @@ function md5sum(data, callback) {
   md5.stdin.end();
 }
 
+function get_mime(ext) {
+  var mime = {
+    "js" : "text/javascript",
+    "css" : "text/css",
+    "svg" : "image/svg"
+  };
+  return mime[ext];
+}
+
+/* Remove multiple consecutive slashes, and put the path
+ * in the form /dir/dir */
+function canonicalize_path (path) {
+  var split = path.split('/');
+  var nonblank = [];
+  for(var i = 0; i < split.length; i++) {
+    if (split[i] != "") {
+      nonblank.push(split[i]);
+    }
+  }
+  return "/" + nonblank.join('/')
+}
+
+
 function Comments() {
   this.comments = null;
   this.saveTimeout = null;
@@ -61,19 +84,6 @@ function Comments() {
     });
   };
 
-  /* Remove multiple consecutive slashes, and put the path
-   * in the form /dir/dir */
-  this.canonicalize_path = function(path) {
-    var split = path.split('/');
-    var nonblank = [];
-    for(var i = 0; i < split.length; i++) {
-      if (split[i] != "") {
-        nonblank.push(split[i]);
-      }
-    }
-    return "/" + nonblank.join('/')
-  }
-
   /* Get the comments for the associated article */
   /* If articles == "last", get he last comments written */
   /* If articles == "*", get all comments written */
@@ -89,22 +99,22 @@ function Comments() {
           c = all;
         } else {
           c = [];
-          for (var i = all.length - 4; i < all.length; i++) {
+          for (var i = all.length - 3; i < all.length; i++) {
             c.push(all[i]);
           }
         }
         break;
       default:
-        c = this.comments[this.canonicalize_path(article)];
+        c = this.comments[canonicalize_path(article)];
         break;
-      }
+    }
 
-        if (c) {
-          for (var i = 0; i < c.length; i++) {
-            delete c[i].email;
-          }
-        }
-        return c;
+    if (c) {
+      for (var i = 0; i < c.length; i++) {
+        delete c[i].email;
+      }
+    }
+    return c;
   };
 
   /* Add a comment. Write the data after 500ms on incactivity, to avoid smashing
@@ -138,19 +148,40 @@ function get_article(request) {
   return url.parse(request.url).pathname.substr(1);
 }
 
+function is_asset(url) {
+  switch(url) {
+    case "/throbber.svg":
+    case "/error.svg":
+    case "/embed.js":
+    case "/whine.css":
+      return true;
+    default:
+      return false;
+  }
+}
+
 /* Process a GET request, to load the comments */
 function process_get(request, response) {
+  var url = canonicalize_path(request.url);
+  if (is_asset(url)){
+    send_file(url, response);
+  } else {
     var article = get_article(request);
     var c = comments.get_comments(article);
     var data = JSON.stringify(c);
+
     var content_length = 0;
+
     if (data) {
-      content_length = data.length;
+      content_length = Buffer.byteLength(data, 'utf8');
     }
     response.writeHead(200, {
       "Content-Type": "application/json",
-      "Content-Length": content_length});
-    response.end(data);
+      "Content-Length": content_length
+    });
+
+    response.end(data, 'utf-8');
+  }
 }
 
 /* Process a POST request, to add a comment. This function computes the mp5sum
@@ -176,11 +207,12 @@ function process_post(request, response) {
         if (!err) {
           comment.email_hash = hash;
           var processed = comments.add_comment(comment);
+          delete processed.email;
+          var data = JSON.stringify(processed);
           response.writeHead(200, {
             "Content-Type": "application/json",
-            "Content-Length": hash.length});
-          delete processed.email;
-          response.end(JSON.stringify(processed));
+            "Content-Length": Buffer.byteLength(data, 'utf8')});
+          response.end(data);
         } else {
           console.log (err);
         }
@@ -191,6 +223,22 @@ function process_post(request, response) {
 
 var comments = new Comments();
 comments.init();
+
+function send_file(url, response) {
+  // get rid of the initial /
+  url = url.substr(1);
+  var extension = url.split('.').pop();
+  var mime = get_mime(extension);
+  fs.readFile(url, "utf-8", function (err, data) {
+    if (err) {
+      console.log(err);
+    }
+    response.writeHead(200, {
+      "Content-Type": mime,
+      "Content-Length": Buffer.byteLength(data, 'utf8')});
+    response.end(data);
+  });
+}
 
 http.createServer(function (request, response) {
   switch(request.method) {
