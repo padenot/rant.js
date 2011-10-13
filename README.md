@@ -1,4 +1,4 @@
-# `rant.js` a comment system
+# rant.js, a comment system
 
 `rant.js` is a comment system built using node.js and raw js. It uses a flat
 json file for the storage of the comments, and can be deployed in under a minute
@@ -24,8 +24,9 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
 - Permalink to comments
 
 # Usage
-1. Install node.js :
-```
+- Install node.js :
+
+```sh
   git clone https://github.com/joyent/node.git
   cd node
   ./configure
@@ -33,7 +34,7 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
   sudo make install
 ```
 
-2. Set up node.js to be proxyfied by you web server. Example for nginx:
+- Set up node.js to be proxyfied by you web server. Example for nginx:
 
 ```
   # in your server directive :
@@ -50,15 +51,18 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
     server 127.0.0.1:8125;
   }
 ```
-3. Install `rant.js` and run it :
 
+- Install `rant.js` and run it :
+
+```sh 
   git clone https://github.com/padenot/rant.js.git
   cd rant.js
   node rant.js
-
-4. Put this code somewhere in your webpage (possibly in your template, etc.) :
-
 ```
+
+- Put this code somewhere in your webpage (possibly in your template, etc.) :
+
+```html
 <div id="rant_thread"></div>
 </div>
 <script type="text/javascript">
@@ -75,7 +79,8 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
 </script>
 <noscript>Activez Javascript pour voir les commentaires</noscript>
 ```
-5. Profit
+
+- Profit
 
 # FAQ
 
@@ -100,5 +105,5 @@ Yeah, suggestions welcome, patches too.
 # Dependencies
 You should have an `md5sum` binary somewhere in your path.
 
-# License
+- License
 New BSD
