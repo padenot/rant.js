@@ -153,7 +153,7 @@ function is_asset(url) {
     case "/throbber.svg":
     case "/error.svg":
     case "/embed.js":
-    case "/whine.css":
+    case "/rant.css":
       return true;
     default:
       return false;

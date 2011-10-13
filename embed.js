@@ -191,7 +191,7 @@ function CommentArea(config) {
     var css=createElement("link");
     css.setAttribute("rel", "stylesheet");
     css.setAttribute("type", "text/css");
-    css.setAttribute("href", this.config.url+"whine.css");
+    css.setAttribute("href", this.config.url+"rant.css");
     $('head').appendChild(css);
 
     /* Comments display */
@@ -391,7 +391,7 @@ var config = {
     onCommentLoadError : "J'essaie de chopper les commentaires, mais le serveur dors. Si ça dure, prévenez moi...",
     onCommentSendError : "J'essaie d'envoyer la requête, mais personne ne répond. Le serveur à surement poney, à cette heure là.",
     name: "lastComments",
-    root: $('#whine_thread'),
+    root: $('#rant_thread'),
     url: script_url
 }
 var comments = new CommentArea(config);

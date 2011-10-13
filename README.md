@@ -44,18 +44,27 @@ Hence I created `rant.js`, to scratch my own itch.
 
 4. Put this code somewhere in your webpage (possibly in your template, etc.) :
 
-```<div id="whine_thread"></div>
+```
+<div id="rant_thread"></div>
 </div>
 <script type="text/javascript">
-  var script_url = 'http://example.com/rant/'; // put the right url here
-(function() {
-      var whine = document.createElement('script');
-      whine.type = 'text/javascript';
-      whine.src = script_url + "embed.js";
+<!-- Put the url to the node server here -->
+  var script_url = 'http://localhost/rant/'; 
+
+  (function() {
+      var rant = document.createElement('script');
+      rant.type = 'text/javascript';
+      rant.src = script_url + "embed.js";
       (document.getElementsByTagName('head')[0] ||
-       document.getElementsByTagName('body')[0]).appendChild(whine);
+       document.getElementsByTagName('body')[0]).appendChild(rant);
   })();
 </script>
 <noscript>Activez Javascript pour voir les commentaires</noscript>
 ```
 5. Profit
+
+# Dependencies
+You should have an `md5sum` binary somewhere in your path.
+
+# License
+New BSD
