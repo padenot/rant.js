@@ -7,7 +7,21 @@ in any website. I use it to power the comments of my
 of handling comments. I could have used Disqus, but for some reasons, I didn't
 want to put the comments of my blog somewhere in the cloud.
 
-Hence I created `rant.js`, to scratch my own itch.
+Hence I created `rant.js`, to scratch my own itch. You can see a demo at
+<http://blog.paul.cx/2011/09/Vasa-museum/>. Mind the french.
+
+# Features
+
+- Display comments for a page
+- Display the last comments
+- Add comments (obviously)
+- Display an avatar using Gravatar
+
+# Features planned
+
+- Add a backoffice
+- Nested comments threads
+- Permalink to comments
 
 # Usage
 1. Install node.js :
@@ -62,6 +76,26 @@ Hence I created `rant.js`, to scratch my own itch.
 <noscript>Activez Javascript pour voir les commentaires</noscript>
 ```
 5. Profit
+
+# FAQ
+
+- This code is crappy.
+
+Yes, I know I should refactor, and it is somewhat planned, but I'm not a web
+developper, and someone once said « Release early, release ofter ».
+
+- A `json` file as backend, are you kidding me ?
+
+No, It works quite well for the low traffic my blog represents. I might change
+that to learn Redis, though.
+
+- I found a bug, what should I do ?
+
+Open a pull request, ping me on twitter, send me a mail, not all at once.
+
+- It doesn't do _that_ ?
+
+Yeah, suggestions welcome, patches too.
 
 # Dependencies
 You should have an `md5sum` binary somewhere in your path.
