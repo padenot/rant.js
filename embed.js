@@ -1,4 +1,5 @@
 (function() {
+
 /**
  * jQueryish selectors
  */
@@ -209,6 +210,21 @@ function CommentArea(config) {
 
     /* Comments form */
     this.form = createElement('div', 'commentsForm');
+    this.render_form(this.form);
+    this.root.appendChild(this.form);
+
+    /* Get the comments for this page */
+    var _this = this;
+    var url = this.config.url + getPath();
+    console.log(url);
+    XHR(url, "GET", null, function(data) {
+      (_this.render_comments.bind(_this))(data);
+    }, function() {
+      showError(this.config.onCommentLoadError, _this.root);
+    });
+  };
+
+  this.render_form = function(where) {
     var form = createElement('form');
     if (this.config.form) {
       // XXX Fieldset ?
@@ -225,25 +241,14 @@ function CommentArea(config) {
         '</textarea>'+
         '<input type="submit" class="commentsFormSubmit" value="'+cf.submit.value+'"></input>'+
        '</div>';
-      this.form.appendChild(form);
-      this.root.appendChild(this.form);
+      where.appendChild(form);
       var _this = this;
       this.form.addEventListener('submit', function(e) {
         e.preventDefault();
         (_this.send_comment.bind(_this))();
       }, false);
     }
-
-    /* Get the comments for this page */
-    var _this = this;
-    var url = this.config.url + getPath();
-    console.log(url);
-    XHR(url, "GET", null, function(data) {
-      (_this.render_comments.bind(_this))(data);
-    }, function() {
-      showError(this.config.onCommentLoadError, _this.root);
-    });
-  };
+  }
 
   this.add_single_comment = function(comment) {
     var commentElement = createElement('div', 'comment');
