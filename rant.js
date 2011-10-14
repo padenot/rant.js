@@ -85,7 +85,7 @@ function Comments() {
   };
 
   /* Get the comments for the associated article */
-  /* If articles == "last", get he last comments written */
+  /* If articles == "last", get the last comments written */
   /* If articles == "*", get all comments written */
   this.get_comments = function(article) {
     var c;

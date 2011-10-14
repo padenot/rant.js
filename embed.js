@@ -145,54 +145,13 @@ function remove_throbber(t) {
   t.parentNode.removeChild(t);
 }
 
-var WhineDefaultConfig = {
-  photos: true,
-  dates: true,
-  name : "postComments",
-  commentsTitle : "Commentaires",
-  form : {
-    name : {
-      ph : "Nom (requis)",
-      title : "Nom"
-           },
-    email : {
-      ph : "Email (requis)",
-      title : "Email"
-            },
-    link : {
-      ph : "Lien",
-      title : "Lien"
-           },
-    content : {
-      ph : "C'est à vous… Essayez de ne pas écrire de bétises. Notez qu'un sous ensemble de Markdown plus ou moins logique permet de mettre en forme votre commentaire.",
-      title : "Contenu"
-           }
-  }
-};
-
 function CommentArea(config) {
   this.config = config;
   this.display = null;
   this.form = null;
   this.root = config.root;
-  /**
-   * From a root element, create a comment zone.
-   * <div>
-   * </div>
-   * →
-   * <div class="comments">
-   *  <div class="commmentsDisplay">
-   *  </div>
-   *  <div class="commentsForm">    // only if config.form
-   *  </div>                        // is true.
-   * </div>
-   */
+
   this.init_comment_zone = function() {
-    var css=createElement("link");
-    css.setAttribute("rel", "stylesheet");
-    css.setAttribute("type", "text/css");
-    css.setAttribute("href", this.config.url+"rant.css");
-    $('head').appendChild(css);
 
     /* Comments display */
     this.config = config;
@@ -213,22 +172,31 @@ function CommentArea(config) {
     this.render_form(this.form);
     this.root.appendChild(this.form);
 
-    /* Get the comments for this page */
+    /* Get the comments for this page, or maybe the recent comments */
+    var path;
+    if (this.root.className.search("rant_recent") == 0) {
+      this.config.path = this.config.global.url + "/last";
+    } else {
+      this.config.path = this.config.global.url + getPath();
+    }
+
+    this.fetch_comments();
+  };
+
+  this.fetch_comments = function() {
     var _this = this;
-    var url = this.config.url + getPath();
-    console.log(url);
-    XHR(url, "GET", null, function(data) {
+    XHR(this.config.path, "GET", null, function(data) {
       (_this.render_comments.bind(_this))(data);
     }, function() {
-      showError(this.config.onCommentLoadError, _this.root);
+      showError(_this.config.onCommentLoadError, _this.root);
     });
-  };
+  }
 
   this.render_form = function(where) {
     var form = createElement('form');
     if (this.config.form) {
       // XXX Fieldset ?
-      var cf = this.config.form;
+      var cf = this.config.global.form;
       form.innerHTML= '<div class="commentsInfos">'+
           '<input name="author" title="'+cf.name.title+'" class="commentsFormName" type="text" placeholder="'+cf.name.ph+'" required="true">'+
           '</input>'+
@@ -303,33 +271,34 @@ function CommentArea(config) {
   };
 
   this.onSendCommentFailed = function() {
-    $(".commentsFormSubmit", this.root).disabled = false;
-    var throbber = $('.commentsThrobber', root);
-    throbber.parentNode.removeChild(throbber);
+    this.form.disabled = false;
+    remove_throbber($('.commentsThrobber', root));
   };
 
   this.onSendComment = function() {
     var root = $(".comments");
-
-    var throbber = document.createElement('img');
-    throbber.src = "http://blog.paul.cx/includes/throbber.svg";
-    throbber.className = "commentsThrobber";
-    this.root.appendChild(throbber);
-
-    $(".commentsFormSubmit", this.root).disabled = true;
+    this.root.appendChild(get_throbber());
+    this.form.disabled = true;
   };
 
   /* When a message is sent successfully, display it, make it glow a
    * bit, reset the form, and enable the submit button */
   this.onSendCommentOk = function(data) {
-    data = JSON.parse(data);
-    var comments = this.display;
-    comments.appendChild(this.add_single_comment(data));
-    comments.lastChild.setAttribute("glow", "true");
-    $("form", this.root).reset()
-    $(".commentsFormSubmit", this.root).disabled = false;
-    var throbber = $('.commentsThrobber', this.root);
-    throbber.parentNode.removeChild(throbber);
+    try {
+      data = JSON.parse(data);
+    } catch (e) {
+      showError(e);
+      return;
+    }
+    this.display.appendChild(this.add_single_comment(data));
+    this.display.lastChild.setAttribute("glow", "true");
+    
+    console.log(this);
+    console.log(this.form);
+    $('form', this.form).reset()
+    this.form.disabled = false;
+
+    remove_throbber($('.throbber', this.root));
 
     setTimeout(function() {
       comments.lastChild.removeAttribute("glow");
@@ -363,10 +332,10 @@ function CommentArea(config) {
   this.init_comment_zone();
 }
 
-var config = {
-  commentsTitle : "Commentaires",
-    photos: true,
-    dates: true,
+var global_config = {
+    onCommentLoadError : "J'essaie de chopper les commentaires, mais le serveur dors. Si ça dure, prévenez moi...",
+    onCommentSendError : "J'essaie d'envoyer la requête, mais personne ne répond. Le serveur à surement poney, à cette heure là.",
+    url: script_url,
     form : {
       name : {
                ph : "Nom (requis)",
@@ -387,12 +356,49 @@ var config = {
     submit : {
                value : "C'est parti !"
              }
-    },
-    onCommentLoadError : "J'essaie de chopper les commentaires, mais le serveur dors. Si ça dure, prévenez moi...",
-    onCommentSendError : "J'essaie d'envoyer la requête, mais personne ne répond. Le serveur à surement poney, à cette heure là.",
-    name: "lastComments",
-    root: $('#rant_thread'),
-    url: script_url
+    }
 }
-var comments = new CommentArea(config);
+
+var config_article = {
+  commentsTitle : "Commentaires",
+    photos: true,
+    form: global_config.form,
+    dates: true,
+    name: "articleComments",
+    global: global_config
+}
+
+var config_recent = {
+  commentsTitle : "Derniers commentaires",
+  form: null,
+  dates: true,
+  name : "recentComments",
+  global: global_config
+}
+
+function fetch_css() {
+  var css = createElement("link");
+  css.setAttribute("rel", "stylesheet");
+  css.setAttribute("type", "text/css");
+  css.setAttribute("href", global_config.url+"rant.css");
+  $('head').appendChild(css);
+}
+
+function init_comments() {
+  var recentCommentsZones = $$('.rant_recent');
+  var articleCommentsZones = $$('.rant_thread');
+  for (var i = 0; i < recentCommentsZones.length; i++) {
+    config_recent.root = recentCommentsZones[i];
+    var article_comments = new CommentArea(config_recent);
+    delete config_recent.root;
+  }
+
+  for (var i = 0; i < articleCommentsZones.length; i++) {
+    config_article.root = articleCommentsZones[i];
+    var article_comments = new CommentArea(config_article);
+    delete config_article.root;
+  }
+}
+fetch_css();
+init_comments();
 })();

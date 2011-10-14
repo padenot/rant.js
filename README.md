@@ -16,6 +16,7 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
 - Display the last comments
 - Add comments (obviously)
 - Display an avatar using Gravatar
+- Display the recent comments (among all comments)
 
 # Features planned
 
@@ -78,6 +79,11 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
   })();
 </script>
 <noscript>Activez Javascript pour voir les commentaires</noscript>
+```
+
+If you want to display the recent comments, use something like this :
+```html
+<div id="rant_recent"></div>
 ```
 
 - Profit
