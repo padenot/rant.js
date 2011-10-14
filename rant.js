@@ -51,7 +51,6 @@ function Comments() {
     var indexed = {};
     for(var i = 0; i < comments.length; i++) {
       var article = comments[i].article;
-      delete comments[i].article;
       if (indexed[article] == undefined) {
         indexed[article] = [];
       }
