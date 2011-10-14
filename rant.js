@@ -207,6 +207,7 @@ function process_post(request, response) {
         if (!err) {
           comment.email_hash = hash;
           var processed = comments.add_comment(comment);
+          console.log(processed);
           delete processed.email;
           var data = JSON.stringify(processed);
           response.writeHead(200, {

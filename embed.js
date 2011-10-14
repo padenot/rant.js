@@ -15,6 +15,12 @@ function $$(query, root) {
   return document.querySelectorAll(query);
 }
 
+function getUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+    return v.toString(16);
+  });
+}
 
 function getPath() {
   /* http://paul.cx/plip/plop
@@ -25,6 +31,9 @@ function getPath() {
   var url = String(window.location).split('/');
   url.splice(0, 3);
   var article_url = canonicalizePath(url.join('/'));
+  if (article_url.length == 0) {
+    article_url = "/";
+  }
   return article_url;
 }
 
@@ -187,6 +196,9 @@ function CommentArea(config) {
     var _this = this;
     XHR(this.config.path, "GET", null, function(data) {
       (_this.render_comments.bind(_this))(data);
+      if (window.location.hash != "") {
+        document.getElementById(window.location.hash).scrollIntoView(true);
+      }
     }, function() {
       showError(_this.config.onCommentLoadError, _this.root);
     });
@@ -234,6 +246,14 @@ function CommentArea(config) {
       author.href = comment.link;
     }
     commentElement.appendChild(author);
+
+    console.log(comment);
+    /* Permalink */
+    var permalink = createElement('a', 'permalink', '#');
+    var nofragment = String(window.location).split('#')[0];
+    permalink.href = comment.article + "#" + (comment.uuid != undefined ? comment.uuid : "");
+    permalink.id = "#" + comment.uuid;
+    commentElement.appendChild(permalink);
 
     /* Date */
     if (this.config.dates) {
@@ -292,19 +312,17 @@ function CommentArea(config) {
     }
     this.display.appendChild(this.add_single_comment(data));
     this.display.lastChild.setAttribute("glow", "true");
-    
-    console.log(this);
-    console.log(this.form);
+
     $('form', this.form).reset()
     this.form.disabled = false;
 
     remove_throbber($('.throbber', this.root));
 
+    var _this = this;
     setTimeout(function() {
-      comments.lastChild.removeAttribute("glow");
+      _this.display.lastChild.removeAttribute("glow");
     }, 2500);
   };
-
 
   this.send_comment = function() {
     this.onSendComment();
@@ -316,8 +334,11 @@ function CommentArea(config) {
 
     json.article = article_name;
     json.date = new Date().getTime();
+    json.uuid = getUUID();
+    console.log(json.uuid);
 
     var data = JSON.stringify(json);
+
 
     var _this = this;
     XHR(url, "POST", data, function(resp) {

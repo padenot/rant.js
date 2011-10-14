@@ -17,12 +17,12 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
 - Add comments (obviously)
 - Display an avatar using Gravatar
 - Display the recent comments (among all comments)
+- Permalink to comments
 
 # Features planned
 
 - Add a backoffice
 - Nested comments threads
-- Permalink to comments
 
 # Usage
 - Install node.js :
