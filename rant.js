@@ -125,7 +125,6 @@ function Comments() {
       clearTimeout(this.saveTimeout);
     }
     var article = comment.article;
-    delete comment.article;
     if (!this.comments[article]) {
       this.comments[article] = [];
     }
