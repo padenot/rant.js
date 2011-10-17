@@ -31,7 +31,7 @@ function getPath() {
   var url = String(window.location).split('/');
   url.splice(0, 3);
   var article_url = canonicalizePath(url.join('/'));
-  if (article_url.length == 0) {
+  if (article_url.length === 0) {
     article_url = "/";
   }
   return article_url;
@@ -63,11 +63,11 @@ function canonicalizePath(path) {
   var split = path.split('/');
   var nonblank = [];
   for(var i = 0; i < split.length; i++) {
-    if (split[i] != "") {
+    if (split[i] !== "") {
       nonblank.push(split[i]);
     }
   }
-  return "/" + nonblank.join('/')
+  return "/" + nonblank.join('/');
 }
 
 /* Shows a red box at the top of the screen */
@@ -164,7 +164,7 @@ function CommentArea(config) {
 
     /* Comments display */
     this.config = config;
-    if (this.config.root != null) {
+    if (this.config.root !== null) {
     } else {
       throw "No root set in the configuration";
     }
@@ -183,8 +183,8 @@ function CommentArea(config) {
 
     /* Get the comments for this page, or maybe the recent comments */
     var path;
-    if (this.root.className.search("rant_recent") == 0) {
-      this.config.path = this.config.global.url + "/last";
+    if (this.root.className.search("rant_recent") === 0) {
+      this.config.path = this.config.global.url + "/recent";
     } else {
       this.config.path = this.config.global.url + getPath();
     }
@@ -196,13 +196,13 @@ function CommentArea(config) {
     var _this = this;
     XHR(this.config.path, "GET", null, function(data) {
       (_this.render_comments.bind(_this))(data);
-      if (window.location.hash != "") {
+      if (window.location.hash !== "") {
         document.getElementById(window.location.hash).scrollIntoView(true);
       }
     }, function() {
       showError(_this.config.onCommentLoadError, _this.root);
     });
-  }
+  };
 
   this.render_form = function(where) {
     var form = createElement('form');
@@ -228,7 +228,7 @@ function CommentArea(config) {
         (_this.send_comment.bind(_this))();
       }, false);
     }
-  }
+  };
 
   this.add_single_comment = function(comment) {
     var commentElement = createElement('div', 'comment');
@@ -247,11 +247,11 @@ function CommentArea(config) {
     }
     commentElement.appendChild(author);
 
-    console.log(comment);
+    console.log(comment.article);
     /* Permalink */
     var permalink = createElement('a', 'permalink', '#');
     var nofragment = String(window.location).split('#')[0];
-    permalink.href = comment.article + "#" + (comment.uuid != undefined ? comment.uuid : "");
+    permalink.href = comment.article + "#" + (comment.uuid !== undefined ? comment.uuid : "");
     permalink.id = "#" + comment.uuid;
     commentElement.appendChild(permalink);
 
@@ -272,13 +272,14 @@ function CommentArea(config) {
   };
 
   this.render_comments = function(data) {
-    if (this.display == null) {
+    if (this.display === null) {
       throw "this.display == null, cannot render_comments()";
     }
     remove_throbber($(".throbber", this.display));
-    if (data.length != 0) {
+    var comments;
+    if (data.length !== 0) {
       try {
-        var comments = JSON.parse(data);
+        comments = JSON.parse(data);
       }
       catch (e) {
         showError(String(e), this.display);
@@ -313,7 +314,7 @@ function CommentArea(config) {
     this.display.appendChild(this.add_single_comment(data));
     this.display.lastChild.setAttribute("glow", "true");
 
-    $('form', this.form).reset()
+    $('form', this.form).reset();
     this.form.disabled = false;
 
     remove_throbber($('.throbber', this.root));
@@ -378,7 +379,7 @@ var global_config = {
                value : "C'est parti !"
              }
     }
-}
+};
 
 var config_article = {
   commentsTitle : "Commentaires",
@@ -387,7 +388,7 @@ var config_article = {
     dates: true,
     name: "articleComments",
     global: global_config
-}
+};
 
 var config_recent = {
   commentsTitle : "Derniers commentaires",
@@ -395,7 +396,7 @@ var config_recent = {
   dates: true,
   name : "recentComments",
   global: global_config
-}
+};
 
 function fetch_css() {
   var css = createElement("link");
@@ -410,11 +411,11 @@ function init_comments() {
   var articleCommentsZones = $$('.rant_thread');
   for (var i = 0; i < recentCommentsZones.length; i++) {
     config_recent.root = recentCommentsZones[i];
-    var article_comments = new CommentArea(config_recent);
+    var recent_comments = new CommentArea(config_recent);
     delete config_recent.root;
   }
 
-  for (var i = 0; i < articleCommentsZones.length; i++) {
+  for (i = 0; i < articleCommentsZones.length; i++) {
     config_article.root = articleCommentsZones[i];
     var article_comments = new CommentArea(config_article);
     delete config_article.root;

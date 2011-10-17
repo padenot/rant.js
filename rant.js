@@ -20,6 +20,105 @@ function md5sum(data, callback) {
   md5.stdin.end();
 }
 
+/** A storage backend which uses a JSON file for storing data **/
+function JSONBackend() {
+  this.filename = "comments.json";
+  this.saveTimeout = null;
+  this.comments = null;
+}
+
+/* Indexed using the article as key */
+JSONBackend.prototype.index = function(comments) {
+  var indexed = {};
+  for(var i = 0; i < comments.length; i++) {
+    var article = comments[i].article;
+    if (indexed[article] === undefined) {
+      indexed[article] = [];
+    }
+    indexed[article].push(comments[i]);
+  }
+  return indexed;
+};
+
+/* Not indexed, list of comments */
+JSONBackend.prototype.deindex = function(comments) {
+  var deindexed = [];
+  for (var i in comments) {
+    for (var j = 0; j < comments[i].length; j++) {
+      deindexed.push(comments[i][j]);
+      deindexed[deindexed.length-1].article = i;
+    }
+  }
+  return deindexed;
+};
+
+/**
+ * Load the data from a json file.
+ * callback param : err, data
+ */
+JSONBackend.prototype.load = function(callback) {
+  var _this = this;
+  fs.readFile(this.filename, "utf-8", function (err, data) {
+    if (err) {
+      callback(err, null);
+    }
+    var comments = JSON.parse(data.toString());
+    console.log("Loading " + comments.length + " comments from " + _this.filename);
+    _this.comments = _this.index(comments);
+    callback(null, comments);
+  });
+};
+
+/**
+ * Save the data from the file.
+ * calback param : err
+ */
+JSONBackend.prototype.save = function(comments, callback) {
+    /* Reset the timer */
+    if (this.saveTimeout !== null) {
+      clearTimeout(this.saveTimeout);
+    }
+
+    var _this = this;
+    this.saveTimeout = setTimeout(function() {
+      fs.writeFile(_this.filename, JSON.stringify(_this.deindex(_this.comments)), function (err) {
+        if (err) callback(err);
+        console.log("comments saved to " + _this.filename);
+      });
+    }, 500);
+};
+
+JSONBackend.prototype.get_recent = function(count) {
+  var all = this.deindex(this.comments);
+  if (all.length < count) {
+    c = all;
+  } else {
+    c = [];
+    for (i = all.length - count; i < all.length; i++) {
+      c.push(all[i]);
+    }
+  }
+  return c;
+};
+
+JSONBackend.prototype.get = function(key) {
+  return this.comments[key];
+};
+
+JSONBackend.prototype.get_all = function() {
+  return this.comments;
+};
+
+JSONBackend.prototype.add = function(comment) {
+  if (! this.comments[comment.article]) {
+    this.comments[comment.article] = [];
+  }
+  this.comments[comment.article].push(comment);
+  this.save(function(err) {
+    console.log("saving error (backend : JSON, filename : "+ this.filename +")");
+  });
+};
+
 function get_mime(ext) {
   var mime = {
     "js" : "text/javascript",
@@ -35,109 +134,76 @@ function canonicalize_path (path) {
   var split = path.split('/');
   var nonblank = [];
   for(var i = 0; i < split.length; i++) {
-    if (split[i] != "") {
+    if (split[i] !== "") {
       nonblank.push(split[i]);
     }
   }
-  return "/" + nonblank.join('/')
+  return "/" + nonblank.join('/');
 }
 
 
-function Comments() {
+function Comments(backend) {
   this.comments = null;
-  this.saveTimeout = null;
-  /* Indexed using the article as key */
-  this.index = function(comments) {
-    var indexed = {};
-    for(var i = 0; i < comments.length; i++) {
-      var article = comments[i].article;
-      if (indexed[article] == undefined) {
-        indexed[article] = [];
-      }
-      indexed[article].push(comments[i]);
-    }
-    return indexed;
-  };
-
-  /* Stored using a json array */
-  this.deindex = function(comments) {
-    var deindexed = [];
-    for (var i in comments) {
-      for (var j = 0; j < comments[i].length; j++) {
-        deindexed.push(comments[i][j]);
-        deindexed[deindexed.length-1].article = i;
-      }
-    }
-    return deindexed;
-  };
+  this.backend = backend;
 
   /* Read all comments from file on startup */
   this.init = function() {
     var _this = this;
-    fs.readFile('comments.json', "utf-8", function (err, data) {
-      if (err) {
-        throw err;
-      }
-      _this.comments = JSON.parse(data.toString());
-      _this.comments = _this.index(_this.comments);
+    backend.load(function(err, data) {
+      _this.comments = data;
     });
   };
 
   /* Get the comments for the associated article */
-  /* If articles == "last", get the last comments written */
+  /* If articles == "recent", get the recent comments written */
   /* If articles == "*", get all comments written */
   this.get_comments = function(article) {
-    var c;
+    var c,i;
     switch(article) {
       case "/*":
-        c = this.comments;
+        c = this.backend.get_all();
         break;
-      case "/last":
-        var all = this.deindex(this.comments);
-        if (all.length < 3) {
-          c = all;
-        } else {
-          c = [];
-          for (var i = all.length - 3; i < all.length; i++) {
-            c.push(all[i]);
-          }
-        }
+      case "/recent":
+        c = this.backend.get_recent(4);
         break;
       default:
-        c = this.comments[canonicalize_path(article)];
+        c = this.backend.get(article);
         break;
     }
 
+    //XXX create a filter method.
     if (c) {
-      for (var i = 0; i < c.length; i++) {
+      for (i = 0; i < c.length; i++) {
         delete c[i].email;
       }
     }
     return c;
   };
 
-  /* Add a comment. Write the data after 500ms on incactivity, to avoid smashing
-   * my poor VPN hard drive */
-  this.add_comment = function(comment) {
-    /* Reset the timer */
-    if (this.saveTimeout != null) {
-      clearTimeout(this.saveTimeout);
-    }
-    var article = comment.article;
-    if (!this.comments[article]) {
-      this.comments[article] = [];
-    }
-    comment.content = md(comment.content, "strong|a|em|sup|sub|strike|ul|code|li|ol|p")
-    this.comments[article].push(comment);
+  this.validate_input = function(comment) {
+    return comment.author &&
+           comment.email &&
+           comment.content &&
+           comment.author.length < 30 &&
+           comment.email.length < 254 &&
+           comment.content.length < 8000;
+  };
+
+  this.add_comment = function(comment, callback) {
     var _this = this;
-    this.saveTimeout = setTimeout(function() {
-      fs.writeFile("comments.json", JSON.stringify(_this.deindex(_this.comments)), function (err) {
-        if (err)
-        throw err;
-      console.log("comments saved");
+    if (this.validate_input(comment)) {
+      md5sum(comment.email, function(err, hash) {
+        if (!err) {
+          comment.email_hash = hash;
+          comment.content = md(comment.content, "strong|a|em|sup|sub|strike|ul|code|li|ol|p");
+          var data = JSON.stringify(comment);
+          callback(undefined, data);
+          _this.backend.add(comment);
+        } else {
+          callback(err, undefined);
+        }
       });
-    }, 500);
-    return comment;
+    }
   };
 }
 
@@ -164,12 +230,11 @@ function process_get(request, response) {
   if (is_asset(url)){
     send_file(url, response);
   } else {
-    var article = get_article(request);
+    var article = url;
     var c = comments.get_comments(article);
     var data = JSON.stringify(c);
 
     var content_length = 0;
-
     if (data) {
       content_length = Buffer.byteLength(data, 'utf8');
     }
@@ -190,37 +255,28 @@ function process_post(request, response) {
     chunks += chunk;
   });
 
+  var comment;
   request.addListener("end", function() {
     try {
-      var comment = JSON.parse(chunks);
+      comment = JSON.parse(chunks);
     } catch (e) {
-      console.log(e);
+      console.log("JSON parse error " + e);
       return;
     }
-    // XXX Check email ?
-    if (comment.author && comment.email && comment.content &&
-      comment.author.length < 30 && comment.email.length < 254 &&
-      comment.content.length < 8000) {
-      md5sum(comment.email, function(err, hash) {
-        if (!err) {
-          comment.email_hash = hash;
-          var processed = comments.add_comment(comment);
-          console.log(processed);
-          delete processed.email;
-          var data = JSON.stringify(processed);
-          response.writeHead(200, {
-            "Content-Type": "application/json",
-            "Content-Length": Buffer.byteLength(data, 'utf8')});
-          response.end(data);
-        } else {
-          console.log (err);
-        }
-      });
-    }
+    comments.add_comment(comment, function(err, data) {
+      if (err) {
+        console.log(err);
+      } else {
+        response.writeHead(200, {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(data, 'utf8')});
+        response.end(data);
+      }
+    });
   });
 }
 
-var comments = new Comments();
+var comments = new Comments(new JSONBackend());
 comments.init();
 
 function send_file(url, response) {
