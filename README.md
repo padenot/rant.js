@@ -82,6 +82,7 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
 ```
 
 If you want to display the recent comments, use something like this :
+
 ```html
 <div id="rant_recent"></div>
 ```
