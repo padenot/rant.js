@@ -161,7 +161,8 @@ function Comments(backend) {
     var c,i;
     switch(article) {
       case "/*":
-        c = this.backend.get_all();
+        //c = this.backend.get_all();
+        c = [];
         break;
       case "/recent":
         c = this.backend.get_recent(4);
@@ -171,12 +172,16 @@ function Comments(backend) {
         break;
     }
 
-    //XXX create a filter method.
-    if (c) {
-      for (i = 0; i < c.length; i++) {
-        delete c[i].email;
-      }
-    }
+    console.log(c);
+    c.apply(function(o) {
+      o.email = undefined;
+    });
+    ////XXX create a filter method.
+    //if (c) {
+      //for (i = 0; i < c.length; i++) {
+        //delete c[i].email;
+      //}
+    //}
     return c;
   };
 
@@ -275,6 +280,24 @@ function process_post(request, response) {
     });
   });
 }
+
+Array.prototype.apply = function(operation) {
+  for (var i = 0; i < this.length; i++) {
+    operation(this[i]);
+  }
+};
+
+//function apply(array, member, func) {
+  //for (var i = 0; i < array.length; i++) {
+    //func(array[i][member]);
+  //}
+//}
+
+//function delete_member(array, members) {
+  //apply(array, member, function(element) {
+    //element = undefined;
+  //});
+//}
 
 var comments = new Comments(new JSONBackend());
 comments.init();
