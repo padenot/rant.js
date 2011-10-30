@@ -174,7 +174,6 @@ function Comments(backend) {
         break;
     }
 
-    console.log(c);
     c.apply(function(o) {
       o.email = undefined;
     });
@@ -288,18 +287,6 @@ Array.prototype.apply = function(operation) {
     operation(this[i]);
   }
 };
-
-//function apply(array, member, func) {
-  //for (var i = 0; i < array.length; i++) {
-    //func(array[i][member]);
-  //}
-//}
-
-//function delete_member(array, members) {
-  //apply(array, member, function(element) {
-    //element = undefined;
-  //});
-//}
 
 var comments = new Comments(new JSONBackend());
 comments.init();

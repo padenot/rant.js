@@ -235,7 +235,7 @@ function CommentArea(config) {
     /* Picture */
     if (this.config.photos) {
       var gravatar = document.createElement('img');
-      gravatar.className="gravatar";
+      gravatar.className="gravatar nomagnify";
       gravatar.src = "http://www.gravatar.com/avatar/" + comment.email_hash + "?s=80&d=mm";
       commentElement.appendChild(gravatar);
     }
@@ -247,7 +247,6 @@ function CommentArea(config) {
     }
     commentElement.appendChild(author);
 
-    console.log(comment.article);
     /* Permalink */
     var permalink = createElement('a', 'permalink', '#');
     var nofragment = String(window.location).split('#')[0];
@@ -336,7 +335,6 @@ function CommentArea(config) {
     json.article = article_name;
     json.date = new Date().getTime();
     json.uuid = getUUID();
-    console.log(json.uuid);
 
     var data = JSON.stringify(json);
 
