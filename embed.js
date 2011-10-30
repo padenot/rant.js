@@ -331,7 +331,7 @@ function CommentArea(config) {
     var json = getDataFromForm(this.form);
 
     var article_name = getPath();
-    var url = "/node" + article_name;
+    var url = "/rant" + article_name;
 
     json.article = article_name;
     json.date = new Date().getTime();
