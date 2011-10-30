@@ -103,12 +103,12 @@ JSONBackend.prototype.get_recent = function(count) {
 
 JSONBackend.prototype.get = function(key) {
   var comments = this.comments[key];
-  return comments.length ? comments : [];
+  return comments ? comments : [];
 };
 
 JSONBackend.prototype.get_all = function() {
   var comments = this.comments;
-  return comments.length ? comments : [];
+  return comments ? comments : [];
 };
 
 JSONBackend.prototype.add = function(comment) {
