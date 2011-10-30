@@ -102,11 +102,13 @@ JSONBackend.prototype.get_recent = function(count) {
 };
 
 JSONBackend.prototype.get = function(key) {
-  return this.comments[key];
+  var comments = this.comments[key];
+  return comments.length ? comments : [];
 };
 
 JSONBackend.prototype.get_all = function() {
-  return this.comments;
+  var comments = this.comments;
+  return comments.length ? comments : [];
 };
 
 JSONBackend.prototype.add = function(comment) {
