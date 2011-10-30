@@ -62,7 +62,7 @@ JSONBackend.prototype.load = function(callback) {
     if (err) {
       callback(err, null);
     }
-    var comments = JSON.parse(data.toString());
+    var comments = JSON.parse(data);
     console.log("Loading " + comments.length + " comments from " + _this.filename);
     _this.comments = _this.index(comments);
     callback(null, comments);
