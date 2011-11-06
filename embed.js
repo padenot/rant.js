@@ -31,7 +31,6 @@ function getPath() {
   var str = String(window.location).split('#')[0];
   var url = str.split('/');
   url.splice(0, 3);
-  url = url.split('#')[0];
   var article_url = canonicalizePath(url.join('/'));
   if (article_url.length === 0) {
     article_url = "/";
