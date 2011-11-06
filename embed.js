@@ -28,7 +28,8 @@ function getPath() {
    * → [plip, plop]
    * → /plip/plop
    */
-  var url = String(window.location).split('/');
+  var str = String(window.location).split('#')[0];
+  var url = str.split('/');
   url.splice(0, 3);
   url = url.split('#')[0];
   var article_url = canonicalizePath(url.join('/'));
