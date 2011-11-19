@@ -43,10 +43,10 @@ function getPath() {
 function formatDate(ms) {
   var str = ["",""];
   var date = new Date(ms);
-  var day = String(date.getDay()+1);
+  var day = String(date.getUTCDate());
   str[0] += day.length == 1 ? "0"+day : day;
   str[0] += "/";
-  var month = String(date.getMonth()+1);
+  var month = String(date.getUTCMonth()+1);
   str[0] += month.length == 1 ? "0"+month : month;
   str[0] += "/";
   str[0] += date.getFullYear();
