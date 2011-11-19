@@ -43,10 +43,10 @@ function getPath() {
 function formatDate(ms) {
   var str = ["",""];
   var date = new Date(ms);
-  var day = String(date.getDay());
+  var day = String(date.getDay()+1);
   str[0] += day.length == 1 ? "0"+day : day;
   str[0] += "/";
-  var month = String(date.getMonth());
+  var month = String(date.getMonth()+1);
   str[0] += month.length == 1 ? "0"+month : month;
   str[0] += "/";
   str[0] += date.getFullYear();
@@ -157,6 +157,7 @@ function remove_throbber(t) {
 
 function CommentArea(config) {
   this.config = config;
+  setup_l10n(config.lang);
   this.display = null;
   this.form = null;
   this.root = config.root;
@@ -170,7 +171,7 @@ function CommentArea(config) {
       throw "No root set in the configuration";
     }
     this.display = createElement('div', 'commentsDisplay');
-    var title = createElement('h1', "", this.config.commentsTitle);
+    var title = createElement('h1', "", l10n.strings.commentsTitle);
 
     this.display.appendChild(title);
     this.display.appendChild(get_throbber());
@@ -201,7 +202,7 @@ function CommentArea(config) {
         document.getElementById(window.location.hash).scrollIntoView(true);
       }
     }, function() {
-      showError(_this.config.onCommentLoadError, _this.root);
+      showError(l10n.commentLoadError, _this.root);
     });
   };
 
@@ -209,18 +210,17 @@ function CommentArea(config) {
     var form = createElement('form');
     if (this.config.form) {
       // XXX Fieldset ?
-      var cf = this.config.global.form;
       form.innerHTML= '<div class="commentsInfos">'+
-          '<input name="author" title="'+cf.name.title+'" class="commentsFormName" type="text" placeholder="'+cf.name.ph+'" required="true">'+
+          '<input name="author" title="'+l10n.strings.name_title+'" class="commentsFormName" type="text" placeholder="'+l10n.strings.name_placeholder+'" required="true">'+
           '</input>'+
-          '<input name="email" title="'+cf.email.title+'" class="commentsFormEmail" type="email" placeholder="'+cf.email.ph+'" required="true">'+
+          '<input name="email" title="'+l10n.strings.email_title+'" class="commentsFormEmail" type="email" placeholder="'+l10n.strings.email_placeholder+'" required="true">'+
           '</input>'+
-          '<input name="link" title="'+cf.link.title+'" class="commentsFormLink" type="url" placeholder="'+cf.link.ph+'">'+
+          '<input name="link" title="'+l10n.strings.link_title+'" class="commentsFormLink" type="url" placeholder="'+l10n.strings.link_placeholder+'">'+
           '</input>'+
         '</div>'+
-        '<textarea name="content" title="'+cf.content.title+'" class="commentsFormContent" placeholder="'+cf.content.ph+'" required="true">'+
+        '<textarea name="content" title="'+l10n.strings.content_title+'" class="commentsFormContent" placeholder="'+l10n.strings.content_placeholder+'" required="true">'+
         '</textarea>'+
-        '<input type="submit" class="commentsFormSubmit" value="'+cf.submit.value+'"></input>'+
+        '<input type="submit" class="commentsFormSubmit" value="'+l10n.strings.submit+'"></input>'+
        '</div>';
       where.appendChild(form);
       var _this = this;
@@ -346,42 +346,120 @@ function CommentArea(config) {
     }, function() {
       (_this.onSendCommentFailed.bind(_this))();
       onSendCommentFailed();
-      showError(this.config.onSendCommentFailed);
+      showError(l10n.strings.sendCommentFailed);
     });
   };
 
   this.init_comment_zone();
 }
 
+var l10n = null;
+
+function setup_l10n(language) {
+  switch (language) {
+    case "en":
+      l10n = Languages.en;
+      break;
+    case "fr":
+      l10n = Languages.fr;
+      break;
+    default:
+      console.log("No localization for " + language);
+      l10n = Languages.en;
+      break;
+  }
+}
+
+var Languages = {
+  fr : {
+         days : [
+           "Lundi",
+         "Mardi",
+         "Mercredi",
+         "Jeudi",
+         "Vendredi",
+         "Samedi",
+         "Dimanche"
+           ],
+         months : [
+           "Janvier",
+         "Février",
+         "Mars",
+         "Avril",
+         "Mai",
+         "Juin",
+         "Juillet",
+         "Août",
+         "Septembre",
+         "Octobre",
+         "Novembre",
+         "Décembre"
+           ],
+         strings : {
+           commentLoadError : "J'essaie de chopper les commentaires, mais le serveur dors. Si ça dure, prévenez moi...",
+           commentSendError : "J'essaie d'envoyer la requête, mais personne ne répond. Le serveur à surement poney, à cette heure là.",
+           name_placeholder : "Nom (requis)",
+           name_title : "Nom",
+           email_placeholder : "Email (requis)",
+           email_title : "Email",
+           link_placeholder : "Lien",
+           link_title : "Lien",
+           content_placeholder : "C'est à vous… Essayez de ne pas écrire de bétises. Notez qu'un sous ensemble de Markdown plus ou moins logique permet de mettre en forme votre commentaire.",
+           content_title : "Contenu",
+           submit : "C'est parti !",
+           commentsThreadTitle : "Commentaires",
+           recentCommentsTitle : "Derniers commentaires"
+
+         }
+       },
+  en : {
+         days : [
+           "Monday",
+         "Tuesday",
+         "Wednesday",
+         "Thursday",
+         "Friday",
+         "Saturday",
+         "Sunday"
+           ],
+         months : [
+           "January",
+         "February",
+         "March",
+         "April",
+         "May",
+         "June",
+         "July",
+         "August",
+         "September",
+         "October",
+         "November",
+         "December"
+           ],
+         strings : {
+           commentLoadError : "Cannot contact the server.",
+           commentSendError : "Cannot send the comment, server unavailable.",
+           name_placeholder : "Name (required)",
+           name_title : "Name",
+           email_placeholder : "Email (required)",
+           email_title : "Email",
+           link_placeholder : "Link",
+           link_title : "Link",
+           content_placeholder : "Your turn. A subset of Markdown is available.",
+           content_title : "Content",
+           submit : "Send.",
+           commentsThreadTitle : "Comments",
+           recentCommentsTitle : "Recent comments"
+         }
+       }
+};
+
 var global_config = {
-    onCommentLoadError : "J'essaie de chopper les commentaires, mais le serveur dors. Si ça dure, prévenez moi...",
-    onCommentSendError : "J'essaie d'envoyer la requête, mais personne ne répond. Le serveur à surement poney, à cette heure là.",
-    url: script_url,
-    form : {
-      name : {
-               ph : "Nom (requis)",
-    title : "Nom"
-             },
-    email : {
-              ph : "Email (requis)",
-    title : "Email"
-            },
-    link : {
-             ph : "Lien",
-    title : "Lien"
-           },
-    content : {
-                ph : "C'est à vous… Essayez de ne pas écrire de bétises. Notez qu'un sous ensemble de Markdown plus ou moins logique permet de mettre en forme votre commentaire.",
-    title : "Contenu"
-              },
-    submit : {
-               value : "C'est parti !"
-             }
-    }
+  form : true,
+  url: script_url
 };
 
 var config_article = {
-  commentsTitle : "Commentaires",
     photos: true,
     form: global_config.form,
     dates: true,
@@ -390,7 +468,6 @@ var config_article = {
 };
 
 var config_recent = {
-  commentsTitle : "Derniers commentaires",
   form: null,
   dates: true,
   name : "recentComments",
@@ -410,12 +487,14 @@ function init_comments() {
   var articleCommentsZones = $$('.rant_thread');
   for (var i = 0; i < recentCommentsZones.length; i++) {
     config_recent.root = recentCommentsZones[i];
+    config_recent.lang = recentCommentsZones[i].getAttribute('lang');
     var recent_comments = new CommentArea(config_recent);
     delete config_recent.root;
   }
 
   for (i = 0; i < articleCommentsZones.length; i++) {
     config_article.root = articleCommentsZones[i];
+    config_article.lang = articleCommentsZones[i].getAttribute('lang');
     var article_comments = new CommentArea(config_article);
     delete config_article.root;
   }

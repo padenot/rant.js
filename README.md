@@ -18,6 +18,7 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
 - Display an avatar using Gravatar
 - Display the recent comments (among all comments)
 - Permalink to comments
+- Localization (en, fr)
 
 # Features planned
 
@@ -64,7 +65,7 @@ Hence I created `rant.js`, to scratch my own itch. You can see a demo at
 - Put this code somewhere in your webpage (possibly in your template, etc.) :
 
 ```html
-<div id="rant_thread"></div>
+<div id="rant_thread" lang="en"></div>
 </div>
 <script type="text/javascript">
 <!-- Put the url to the node server here -->
@@ -110,7 +111,7 @@ Open a pull request, ping me on twitter, send me a mail, not all at once.
 Yeah, suggestions welcome, patches too.
 
 # Dependencies
-You should have an `md5sum` binary somewhere in your path.
+You should have an `md5sum` binary somewhere in your path on the server.
 
 - License
 New BSD
