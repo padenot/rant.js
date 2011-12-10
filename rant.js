@@ -4,9 +4,32 @@ var url = require('url');
 var spawn = require('child_process').spawn;
 var md = require('node-markdown').Markdown;
 
+var debug = true;
+
+function log(s) {
+  if (debug) {
+    console.log(s);
+  }
+}
+
+Array.prototype.apply = function(operation) {
+  for (var i = 0; i < this.length; i++) {
+    operation(this[i]);
+  }
+};
+
+function get_mime(ext) {
+  var mime = {
+    "js" : "text/javascript",
+    "css" : "text/css",
+    "svg" : "image/svg"
+  };
+  return mime[ext];
+}
+
 /* Compute md5sum of the first argument */
 function md5sum(data, callback) {
-  md5    = spawn('md5sum', []);
+  md5 = spawn('md5sum', []);
 
   md5.stdout.on('data', function (data) {
     callback("", data.toString().split(' ')[0]);
@@ -63,7 +86,7 @@ JSONBackend.prototype.load = function(callback) {
       callback(err, null);
     }
     var comments = JSON.parse(data);
-    console.log("Loading " + comments.length + " comments from " + _this.filename);
+    log("Loading " + comments.length + " comments from " + _this.filename);
     _this.comments = _this.index(comments);
     callback(null, comments);
   });
@@ -74,18 +97,18 @@ JSONBackend.prototype.load = function(callback) {
  * calback param : err
  */
 JSONBackend.prototype.save = function(comments, callback) {
-    /* Reset the timer */
-    if (this.saveTimeout !== null) {
-      clearTimeout(this.saveTimeout);
-    }
+  /* Reset the timer */
+  if (this.saveTimeout !== null) {
+    clearTimeout(this.saveTimeout);
+  }
 
-    var _this = this;
-    this.saveTimeout = setTimeout(function() {
-      fs.writeFile(_this.filename, JSON.stringify(_this.deindex(_this.comments)), function (err) {
-        if (err) callback(err);
-        console.log("comments saved to " + _this.filename);
-      });
-    }, 500);
+  var _this = this;
+  this.saveTimeout = setTimeout(function() {
+    fs.writeFile(_this.filename, JSON.stringify(_this.deindex(_this.comments)), function (err) {
+      if (err) callback(err);
+      log("comments saved to " + _this.filename);
+    });
+  }, 500);
 };
 
 JSONBackend.prototype.get_recent = function(count) {
@@ -107,7 +130,8 @@ JSONBackend.prototype.get = function(key) {
 };
 
 JSONBackend.prototype.get_all = function() {
-  var comments = this.comments;
+  var comments = this.deindex(this.comments);
+  log("Comments : " + comments);
   return comments ? comments : [];
 };
 
@@ -117,18 +141,9 @@ JSONBackend.prototype.add = function(comment) {
   }
   this.comments[comment.article].push(comment);
   this.save(function(err) {
-    console.log("saving error (backend : JSON, filename : "+ this.filename +")");
+    log("saving error (backend : JSON, filename : "+ this.filename +")");
   });
 };
-
-function get_mime(ext) {
-  var mime = {
-    "js" : "text/javascript",
-    "css" : "text/css",
-    "svg" : "image/svg"
-  };
-  return mime[ext];
-}
 
 /* Remove multiple consecutive slashes, and put the path
  * in the form /dir/dir */
@@ -158,13 +173,12 @@ function Comments(backend) {
 
   /* Get the comments for the associated article */
   /* If articles == "recent", get the recent comments written */
-  /* If articles == "*", get all comments written */
+  /* If articles == "all", get all comments written */
   this.get_comments = function(article) {
-    var c,i;
+    var c;
     switch(article) {
-      case "/*":
-        //c = this.backend.get_all();
-        c = [];
+      case "/all":
+        c = this.backend.get_all();
         break;
       case "/recent":
         c = this.backend.get_recent(4);
@@ -173,26 +187,16 @@ function Comments(backend) {
         c = this.backend.get(article);
         break;
     }
-
-    c.apply(function(o) {
-      o.email = undefined;
-    });
-    ////XXX create a filter method.
-    //if (c) {
-      //for (i = 0; i < c.length; i++) {
-        //delete c[i].email;
-      //}
-    //}
     return c;
   };
 
   this.validate_input = function(comment) {
     return comment.author &&
-           comment.email &&
-           comment.content &&
-           comment.author.length < 30 &&
-           comment.email.length < 254 &&
-           comment.content.length < 8000;
+      comment.email &&
+      comment.content &&
+      comment.author.length < 30 &&
+      comment.email.length < 254 &&
+      comment.content.length < 8000;
   };
 
   this.add_comment = function(comment, callback) {
@@ -266,12 +270,12 @@ function process_post(request, response) {
     try {
       comment = JSON.parse(chunks);
     } catch (e) {
-      console.log("JSON parse error " + e);
+      log("JSON parse error " + e);
       return;
     }
     comments.add_comment(comment, function(err, data) {
       if (err) {
-        console.log(err);
+        log(err);
       } else {
         response.writeHead(200, {
           "Content-Type": "application/json",
@@ -281,12 +285,6 @@ function process_post(request, response) {
     });
   });
 }
-
-Array.prototype.apply = function(operation) {
-  for (var i = 0; i < this.length; i++) {
-    operation(this[i]);
-  }
-};
 
 var comments = new Comments(new JSONBackend());
 comments.init();
@@ -298,7 +296,7 @@ function send_file(url, response) {
   var mime = get_mime(extension);
   fs.readFile(url, "utf-8", function (err, data) {
     if (err) {
-      console.log(err);
+      log(err);
     }
     response.writeHead(200, {
       "Content-Type": mime,
@@ -316,9 +314,9 @@ http.createServer(function (request, response) {
       process_post(request, response);
       break;
     default:
-      console.log("rejected");
+      log("rejected");
       break;
   }
 }).listen(8125);
 
-console.log('Server running on port 8125.');
+log('Server running on port 8125.');
